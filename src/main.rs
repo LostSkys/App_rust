@@ -179,6 +179,24 @@ fn generer_page_galerie(chemin: &str, titre: &str, section: &str) -> Html<String
                             else if est_pdf { "pdf" }
                             else { "image" };
 
+            // Extraire NOM + Prénom depuis le nom de fichier
+            // Format attendu : NOM_Prenom_type_timestamp.ext
+            let parties: Vec<&str> = nom.split('_').collect();
+            let client_label = if parties.len() >= 2 {
+                // Les 2 premiers segments = NOM + Prenom
+                // On capitalise proprement : NOM → Nom
+                let nom_part    = parties[0];
+                let prenom_part = parties[1];
+                let nom_clean   = {
+                    let mut s = nom_part.to_lowercase();
+                    if let Some(c) = s.get_mut(0..1) { c.make_ascii_uppercase(); }
+                    s
+                };
+                format!("{} {}", nom_clean, prenom_part)
+            } else {
+                nom.clone()
+            };
+
             let apercu = if est_pdf {
                 format!(r#"<a href="/{}/src/{}" target="_blank"><div class="pdf-icon">📄</div></a>"#, section, nom)
             } else {
@@ -189,9 +207,10 @@ fn generer_page_galerie(chemin: &str, titre: &str, section: &str) -> Html<String
                 <div class="card">
                     <span class="tag {}">{}</span><br>
                     {}
-                    <p style="font-size: 10px; overflow-wrap: break-word; margin-top: 8px;">{}</p>
+                    <p style="font-size: 13px; font-weight: bold; color: #333; margin-top: 8px;">{}</p>
+                    <p style="font-size: 10px; color: #aaa; overflow-wrap: break-word; margin-top: 3px;">{}</p>
                 </div>
-            "#, categorie, categorie.to_uppercase(), apercu, nom));
+            "#, categorie, categorie.to_uppercase(), apercu, client_label, nom));
         }
     }
 
